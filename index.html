@@ -362,8 +362,12 @@
     }
   }
 
-  function makeChoices(answer) {
+  function makeChoices(problem) {
+    const { op, a, b, answer } = problem;
     const set = new Set([answer]);
+    // Always include the "swap-operator" answer when it's a valid in-range number.
+    const swap = op === '+' ? a - b : a + b;
+    if (swap >= 0 && swap <= MAX && swap !== answer) set.add(swap);
     while (set.size < 4) {
       const delta = rand(-3, 3);
       const candidate = answer + delta;
@@ -468,7 +472,7 @@
     $progress.style.width = ((state.idx) / TOTAL * 100) + '%';
     renderFrames(state.current);
     renderEquation(state.current);
-    renderChoices(makeChoices(state.current.answer), state.current.answer);
+    renderChoices(makeChoices(state.current), state.current.answer);
     $feedback.textContent = 'Tippe auf die richtige Antwort!';
     $feedback.className = 'feedback';
   }

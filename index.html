@@ -77,12 +77,15 @@
 
   .card {
     flex: 1;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
     background: var(--card);
     border-radius: 22px;
     box-shadow: 0 14px 30px rgba(0,0,0,0.18);
-    padding: 16px;
+    padding: clamp(12px, 2vmin, 20px);
     display: grid;
-    gap: 12px;
+    gap: clamp(8px, 1.6vmin, 14px);
     min-height: 0;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr auto auto auto;
@@ -115,24 +118,27 @@
     max-width: 360px;
   }
 
-  /* Landscape (anything wider than tall): visual on the left, equation + feedback + choices on the right */
+  /* Landscape: visual on the left (frames stay stacked vertically), equation + buttons on the right */
   @media (min-aspect-ratio: 1/1) {
     .card {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-rows: 1fr auto auto auto 1fr;
       grid-template-areas:
+        "visual ."
         "visual equation"
         "visual feedback"
-        "visual choices";
-      column-gap: 18px;
+        "visual choices"
+        "visual .";
+      column-gap: clamp(16px, 4vw, 40px);
+      row-gap: 8px;
     }
     .frames {
-      flex-direction: row;
-      max-width: 100%;
+      flex-direction: column;
+      max-width: min(100%, 70vh);
     }
-    .frame { flex: 1; }
-    .equation { align-self: end; }
-    .choices { align-self: stretch; }
+    .equation   { align-self: end; }
+    .feedback   { align-self: center; }
+    .choices    { align-self: start; width: 100%; max-width: 480px; margin: 0 auto; }
   }
   .frame {
     display: grid;
@@ -178,7 +184,7 @@
 
   .equation {
     text-align: center;
-    font-size: clamp(48px, 14vw, 84px);
+    font-size: clamp(38px, min(12vw, 14vh), 80px);
     font-weight: 900;
     letter-spacing: 3px;
     color: var(--ink);
@@ -198,8 +204,8 @@
     border: none;
     font: inherit;
     font-weight: 800;
-    font-size: clamp(26px, 7vw, 38px);
-    padding: 20px 0;
+    font-size: clamp(22px, min(6vw, 6vh), 34px);
+    padding: clamp(12px, 2.4vh, 20px) 0;
     border-radius: 18px;
     color: white;
     background: linear-gradient(160deg, #6c5ce7, #4834d4);
@@ -250,14 +256,14 @@
     text-align: center;
     min-height: 28px;
     font-weight: 700;
-    font-size: 20px;
+    font-size: clamp(16px, min(3.5vw, 3vh), 20px);
     color: var(--muted);
     transition: font-size 120ms ease;
   }
   .feedback.good { color: var(--good); }
   .feedback.bad  {
     color: var(--bad);
-    font-size: clamp(20px, 5.5vw, 26px);
+    font-size: clamp(18px, min(4.5vw, 4vh), 26px);
     font-weight: 800;
   }
   .feedback .ans {

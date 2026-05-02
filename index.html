@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#6c5ce7" />
-<title>Mathe-Abenteuer</title>
+<title>Melitas Mathe</title>
 <style>
   :root {
     --bg-1: #6c5ce7;
@@ -308,7 +308,7 @@
     font: inherit;
     font-weight: 800;
     font-size: 18px;
-    padding: 14px 22px;
+    padding: 14px 18px;
     border-radius: 14px;
     color: white;
     background: linear-gradient(160deg, #6c5ce7, #4834d4);
@@ -316,6 +316,36 @@
     cursor: pointer;
   }
   .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #2e1f9c; }
+  .btn.secondary {
+    background: linear-gradient(160deg, #b2bec3, #636e72);
+    box-shadow: 0 5px 0 #3d4548;
+  }
+  .btn.secondary:active { box-shadow: 0 2px 0 #3d4548; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Help (visualization) toggle button — used on Level 2+ */
+  .help-btn {
+    appearance: none;
+    font: inherit;
+    font-weight: 800;
+    font-size: clamp(16px, min(4vw, 4vh), 22px);
+    color: var(--bg-1);
+    background: rgba(108, 92, 231, 0.10);
+    border: 2px dashed rgba(108, 92, 231, 0.55);
+    padding: 14px 22px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 80ms ease, background 200ms;
+  }
+  .help-btn:active { transform: scale(0.96); background: rgba(108, 92, 231, 0.18); }
+  .visual:not(.help-mode) .help-btn { display: none; }
+  .visual.help-mode:not(.revealed) .frames { display: none; }
+  .visual.help-mode.revealed .help-btn { display: none; }
 
   /* Confetti */
   .confetti {
@@ -334,14 +364,15 @@
 <div id="app">
   <div class="topbar">
     <div class="pill" id="level-pill">Stufe 1</div>
-    <div class="title">Mathe-Abenteuer</div>
+    <div class="title">Melitas Mathe</div>
     <div class="pill" id="score-pill">⭐ 0</div>
   </div>
 
   <div class="progress"><div id="progress-bar"></div></div>
 
   <div class="card">
-    <div class="visual">
+    <div class="visual" id="visual">
+      <button class="help-btn" id="help-btn" type="button">💡 Hilfe</button>
       <div class="frames" id="frames"></div>
     </div>
 
@@ -358,7 +389,10 @@
     <h2 id="modal-title">Gut gemacht!</h2>
     <div class="stars" id="modal-stars"></div>
     <p id="modal-text"></p>
-    <button class="btn" id="modal-btn">Nochmal spielen</button>
+    <div class="modal-actions">
+      <button class="btn secondary" id="modal-secondary"></button>
+      <button class="btn" id="modal-primary"></button>
+    </div>
   </div>
 </div>
 
@@ -367,33 +401,42 @@
 <script>
 (() => {
   const TOTAL = 10;
-  const MAX = 20;
 
+  const LEVELS = [
+    { id: 1, label: 'Stufe 1', min: 0, max: 20, showVisual: true  },
+    { id: 2, label: 'Stufe 2', min: 0, max: 20, showVisual: false },
+  ];
+
+  const $visual    = document.getElementById('visual');
+  const $helpBtn   = document.getElementById('help-btn');
   const $frames    = document.getElementById('frames');
   const $equation  = document.getElementById('equation');
   const $choices   = document.getElementById('choices');
   const $feedback  = document.getElementById('feedback');
   const $progress  = document.getElementById('progress-bar');
   const $score     = document.getElementById('score-pill');
+  const $levelPill = document.getElementById('level-pill');
   const $overlay   = document.getElementById('overlay');
   const $modalTitle= document.getElementById('modal-title');
   const $modalText = document.getElementById('modal-text');
   const $modalStars= document.getElementById('modal-stars');
-  const $modalBtn  = document.getElementById('modal-btn');
+  const $modalPrim = document.getElementById('modal-primary');
+  const $modalSec  = document.getElementById('modal-secondary');
   const $confetti  = document.getElementById('confetti');
 
-  const state = { idx: 0, score: 0, current: null, locked: false };
+  const state = { level: 1, idx: 0, score: 0, current: null, locked: false };
+  const currentLevel = () => LEVELS.find(l => l.id === state.level);
 
   function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
   function makeProblem() {
-    // 50/50 addition or subtraction; results stay in 0..MAX, operands in 0..MAX
+    const { max } = currentLevel();
     if (Math.random() < 0.5) {
-      const a = rand(0, MAX);
-      const b = rand(0, MAX - a);
+      const a = rand(0, max);
+      const b = rand(0, max - a);
       return { op: '+', a, b, answer: a + b };
     } else {
-      const a = rand(1, MAX);
+      const a = rand(1, max);
       const b = rand(0, a);
       return { op: '-', a, b, answer: a - b };
     }
@@ -401,14 +444,14 @@
 
   function makeChoices(problem) {
     const { op, a, b, answer } = problem;
+    const { max } = currentLevel();
     const set = new Set([answer]);
-    // Always include the "swap-operator" answer when it's a valid in-range number.
     const swap = op === '+' ? a - b : a + b;
-    if (swap >= 0 && swap <= MAX && swap !== answer) set.add(swap);
+    if (swap >= 0 && swap <= max && swap !== answer) set.add(swap);
     while (set.size < 4) {
       const delta = rand(-3, 3);
       const candidate = answer + delta;
-      if (candidate >= 0 && candidate <= MAX && candidate !== answer) set.add(candidate);
+      if (candidate >= 0 && candidate <= max && candidate !== answer) set.add(candidate);
     }
     const arr = [...set];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -505,6 +548,7 @@
   }
 
   function setProblem() {
+    const lvl = currentLevel();
     state.current = makeProblem();
     $progress.style.width = ((state.idx) / TOTAL * 100) + '%';
     renderFrames(state.current);
@@ -512,6 +556,8 @@
     renderChoices(makeChoices(state.current), state.current.answer);
     $feedback.textContent = 'Tippe auf die richtige Antwort!';
     $feedback.className = 'feedback';
+    $visual.classList.toggle('help-mode', !lvl.showVisual);
+    $visual.classList.remove('revealed');
   }
 
   function finish() {
@@ -535,15 +581,30 @@
       $modalStars.appendChild(s);
     }
 
+    const hasNext = LEVELS.some(l => l.id === state.level + 1);
+    if (hasNext) {
+      $modalSec.textContent  = '↻ Nochmal';
+      $modalSec.onclick      = () => reset(state.level);
+      $modalPrim.textContent = 'Nächste Stufe →';
+      $modalPrim.onclick     = () => reset(state.level + 1);
+    } else {
+      $modalSec.textContent  = '← Stufe 1';
+      $modalSec.onclick      = () => reset(1);
+      $modalPrim.textContent = '↻ Nochmal spielen';
+      $modalPrim.onclick     = () => reset(state.level);
+    }
+
     if (stars === 3) burstConfetti();
     $overlay.classList.add('show');
   }
 
-  function reset() {
+  function reset(toLevel) {
+    state.level = toLevel;
     state.idx = 0;
     state.score = 0;
     state.locked = false;
     $score.textContent = '⭐ 0';
+    $levelPill.textContent = currentLevel().label;
     $overlay.classList.remove('show');
     $confetti.innerHTML = '';
     setProblem();
@@ -563,11 +624,12 @@
     setTimeout(() => { $confetti.innerHTML = ''; }, 3500);
   }
 
-  $modalBtn.addEventListener('click', reset);
+  $helpBtn.addEventListener('click', () => $visual.classList.add('revealed'));
 
   // Prevent double-tap zoom on iOS for buttons
   document.addEventListener('gesturestart', e => e.preventDefault());
 
+  $levelPill.textContent = currentLevel().label;
   setProblem();
 })();
 </script>

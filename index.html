@@ -115,8 +115,8 @@
     max-width: 360px;
   }
 
-  /* Landscape: visual on the left, equation + feedback + choices on the right */
-  @media (orientation: landscape) and (max-height: 540px) {
+  /* Landscape (anything wider than tall): visual on the left, equation + feedback + choices on the right */
+  @media (min-aspect-ratio: 1/1) {
     .card {
       grid-template-columns: 1fr 1fr;
       grid-template-rows: auto auto 1fr;

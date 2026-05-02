@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#6c5ce7" />
-<title>Math Adventure</title>
+<title>Mathe-Abenteuer</title>
 <style>
   :root {
     --bg-1: #6c5ce7;
@@ -268,8 +268,8 @@
 <body>
 <div id="app">
   <div class="topbar">
-    <div class="pill" id="level-pill">Level 1</div>
-    <div class="title">Math Adventure</div>
+    <div class="pill" id="level-pill">Stufe 1</div>
+    <div class="title">Mathe-Abenteuer</div>
     <div class="pill" id="score-pill">⭐ 0</div>
   </div>
 
@@ -282,7 +282,7 @@
 
     <div class="equation" id="equation"></div>
 
-    <div class="feedback" id="feedback">Tap the correct answer!</div>
+    <div class="feedback" id="feedback">Tippe auf die richtige Antwort!</div>
 
     <div class="choices" id="choices"></div>
   </div>
@@ -290,10 +290,10 @@
 
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h2 id="modal-title">Great job!</h2>
+    <h2 id="modal-title">Gut gemacht!</h2>
     <div class="stars" id="modal-stars"></div>
     <p id="modal-text"></p>
-    <button class="btn" id="modal-btn">Play Again</button>
+    <button class="btn" id="modal-btn">Nochmal spielen</button>
   </div>
 </div>
 
@@ -410,12 +410,12 @@
       btn.classList.add('correct');
       state.score++;
       $score.textContent = '⭐ ' + state.score;
-      $feedback.textContent = pick(['Awesome!', 'Yes!', 'Great!', 'Nice!', 'Super!']);
+      $feedback.textContent = pick(['Toll!', 'Ja!', 'Super!', 'Klasse!', 'Spitze!', 'Bravo!']);
       $feedback.className = 'feedback good';
       setTimeout(next, 750);
     } else {
       btn.classList.add('wrong');
-      $feedback.textContent = `Try again — the answer is ${answer}`;
+      $feedback.textContent = `Probier's nochmal — die Antwort ist ${answer}`;
       $feedback.className = 'feedback bad';
       // highlight correct choice
       [...$choices.children].forEach(c => {
@@ -453,9 +453,9 @@
       state.score >= TOTAL - 4 ? 1 : 0;
 
     $modalTitle.textContent =
-      stars === 3 ? 'Perfect!' :
-      stars >= 1  ? 'Great job!' : 'Good try!';
-    $modalText.textContent = `You got ${state.score} out of ${TOTAL} right.`;
+      stars === 3 ? 'Perfekt!' :
+      stars >= 1  ? 'Gut gemacht!' : 'Gut versucht!';
+    $modalText.textContent = `Du hast ${state.score} von ${TOTAL} richtig.`;
 
     $modalStars.innerHTML = '';
     for (let i = 0; i < 3; i++) {
